@@ -59,10 +59,10 @@ else
 fi
 
 echo "##### Donwloading and extracting..."
-wget ${raspbian_url}
+curl -sLfO ${raspbian_url}
 unzip ${raspbian_filename_zip}
-wget https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/kernel-qemu-4.14.79-stretch
-wget https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/versatile-pb.dtb
+curl -sLfO https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/kernel-qemu-4.14.79-stretch
+curl -sLfO https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/versatile-pb.dtb
 
 echo "##### Preparing image for tests..."
 boot_start=$(fdisk -l ${raspbian_filename_img} | grep Linux | tr -s ' ' | cut -d ' ' -f2)
