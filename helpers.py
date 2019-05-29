@@ -18,7 +18,10 @@ import re
 import signal
 import stat
 import subprocess
+import time
+from fabric import Config
 from fabric import Connection
+from paramiko import SSHException
 
 def _prepare_key_arg(key_filename):
     if key_filename:
@@ -74,3 +77,53 @@ class PortForward:
     def __exit__(self, arg1, arg2, arg3):
         if self.proc:
             subprocess.check_call(["pkill", "-xf", re.escape(" ".join(self.args))])
+
+def new_tester_ssh_connection(setup_test_container):
+    config_hide = Config()
+    config_hide.run.hide = True
+    with Connection(host="localhost",
+                user=setup_test_container.user,
+                port=setup_test_container.port,
+                config=config_hide,
+                connect_kwargs={
+                    "key_filename": setup_test_container.key_filename,
+                    "password": "",
+                    "timeout": 60,
+                    "banner_timeout": 60,
+                    "auth_timeout": 60,
+                } ) as conn:
+
+        ready = _probe_ssh_connection(conn)
+
+        assert ready, "SSH connection can not be established. Aborting"
+        return conn
+
+def wait_for_container_boot(docker_container_id):
+    assert docker_container_id is not None
+    ready = False
+    timeout = time.time() + 60*3
+    while not ready and time.time() < timeout:
+        time.sleep(5)
+        output = subprocess.check_output("docker logs {} 2>&1".format(docker_container_id), shell=True)
+
+        # Check on the last 100 chars only, so that we can detect reboots
+        if re.search("(Poky|GNU/Linux).* tty", output.decode("utf-8")[-100:], flags=re.MULTILINE):
+            ready = True
+
+    return ready
+
+def _probe_ssh_connection(conn):
+    ready = False
+    timeout = time.time() + 60
+    while not ready and time.time() < timeout:
+        try:
+            result = conn.run('true', hide=True)
+            if result.exited == 0:
+                ready = True
+
+        except SSHException as e:
+            if not (str(e).endswith("Connection reset by peer") or str(e).endswith("Error reading SSH protocol banner")):
+                raise e
+            time.sleep(5)
+
+    return ready
