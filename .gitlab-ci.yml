@@ -1,7 +1,6 @@
 image: docker:git
 
 variables:
-  REPO_NAME: github.com/mendersoftware/mender-demo-artifact
   RASPBIAN_VERSION: '2019-04-08'
   DOCKER_REPOSITORY: mendersoftware/mender-test-containers
 
