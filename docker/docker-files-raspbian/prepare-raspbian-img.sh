@@ -35,7 +35,8 @@ fi
 
 currdir=$(pwd)
 scriptdir=$(cd `dirname $0` && pwd)
-workdir=$(mktemp -d)
+workdir=${currdir}/tmp-work
+mkdir -p ${workdir}
 
 raspbian_filename_zip="${version}-raspbian-stretch-lite.zip"
 raspbian_filename_img="${version}-raspbian-stretch-lite.img"
@@ -61,6 +62,7 @@ fi
 echo "##### Donwloading and extracting..."
 curl -sLfO ${raspbian_url}
 unzip ${raspbian_filename_zip}
+rm ${raspbian_filename_zip}
 curl -sLfO https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/kernel-qemu-4.14.79-stretch
 curl -sLfO https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/versatile-pb.dtb
 
@@ -68,13 +70,14 @@ echo "##### Preparing image for tests..."
 boot_start=$(fdisk -l ${raspbian_filename_img} | grep Linux | tr -s ' ' | cut -d ' ' -f2)
 sector_size=$(fdisk -l ${raspbian_filename_img} | grep '^Sector' | cut -d' ' -f4)
 offset=$(expr $boot_start \* $sector_size)
-mkdir img-rootfs
+mkdir -p img-rootfs
 sudo mount -o loop,offset=$offset ${raspbian_filename_img} img-rootfs
 
 sudo mkdir img-rootfs/home/pi/.ssh
 cat ${scriptdir}/../ssh-keys/key.pub | sudo tee img-rootfs/home/pi/.ssh/authorized_keys
 sudo ln -s /lib/systemd/system/ssh.service img-rootfs/etc/systemd/system/multi-user.target.wants/ssh.service
 sudo umount img-rootfs
+rmdir img-rootfs
 
 mv ${raspbian_filename_img} ${currdir}/${raspbian_mender_filename_img}
 mv kernel-qemu-4.14.79-stretch ${currdir}/
