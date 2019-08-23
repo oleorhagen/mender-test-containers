@@ -3,7 +3,7 @@
 # Downloads Raspbian SD image and prepares it for testing (enable SSH and add trusted key)
 # Downloads also the dependencies (kernel and dtb file) for QEMU emulation
 
-set -e
+set -e -x
 
 show_help_and_exit() {
   cat << EOF
