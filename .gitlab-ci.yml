@@ -2,7 +2,6 @@ image: docker:git
 
 variables:
   RASPBIAN_VERSION: '2019-04-08'
-  DOCKER_REPOSITORY: mendersoftware/mender-test-containers
 
 stages:
   - test
@@ -51,26 +50,31 @@ build:
     - docker:dind
   script:
     - tar -xvf docker-files-raspbian.tar
-    - docker build --build-arg raspbian_version=${RASPBIAN_VERSION} -t $DOCKER_REPOSITORY:pr docker-files-raspbian
-    - docker save $DOCKER_REPOSITORY:pr > image.tar
+    - docker build --build-arg raspbian_version=${RASPBIAN_VERSION} -t $CI_REGISTRY_IMAGE:pr docker-files-raspbian
+    - docker save $CI_REGISTRY_IMAGE:pr > image.tar
   artifacts:
     expire_in: 2w
     paths:
       - image.tar
 
 publish:build:master:
-  before_script: []
   stage: publish
   dependencies:
     - build
   services:
     - docker:dind
+  before_script:
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   script:
-    - echo "publishing image to docker hub"
-    # - docker load -i image.tar
-    # - export COMMIT_TAG="$CI_COMMIT_REF_NAME"_"$CI_COMMIT_SHA";
-    # - docker tag $DOCKER_REPOSITORY:pr $DOCKER_REPOSITORY:$COMMIT_TAG;
-    # - docker push $DOCKER_REPOSITORY:$COMMIT_TAG;
+    - echo "publishing image to Gitlab docker registry"
+    - docker load -i image.tar
+    - export COMMIT_TAG="$CI_COMMIT_REF_NAME"_"$CI_COMMIT_SHA";
+    - docker tag $CI_REGISTRY_IMAGE:pr $CI_REGISTRY_IMAGE:$COMMIT_TAG;
+    - docker rmi $CI_REGISTRY_IMAGE:pr
+    - docker tag $CI_REGISTRY_IMAGE:$COMMIT_TAG $CI_REGISTRY_IMAGE:latest;
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:$COMMIT_TAG;
+    - docker push $CI_REGISTRY_IMAGE:latest;
   only:
     - master
   tags:
