@@ -37,6 +37,12 @@ def put(conn, file, key_filename=None, local_path=".", remote_path="."):
     conn.local("scp %s -C -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P %s %s %s@%s:%s" %
           (key_arg, conn.port, os.path.join(local_path, file), conn.user, conn.host, remote_path))
 
+def run(conn, command, key_filename=None, warn=False):
+    key_arg = _prepare_key_arg(key_filename)
+    result = conn.local("ssh %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=60 -p %s %s@%s %s" %
+                        (key_arg, conn.port, conn.user, conn.host, command), warn=warn)
+    return result
+
 class PortForward:
     user = None
     host = None
