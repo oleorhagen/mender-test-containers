@@ -19,6 +19,7 @@ import requests
 import subprocess
 import time
 import os.path
+import logging
 
 from fabric import Connection
 
@@ -32,13 +33,18 @@ def setup_test_container(request, setup_test_container_props, mender_version):
     if setup_test_container_props.append_mender_version:
         image = "%s:%s" % (image, mender_version)
 
-    output = subprocess.check_output("docker run --rm --network host -tid %s" % image, shell=True)
+    cmd = "docker run --rm --network host -tid %s" % image
+    logging.debug("setup_test_container: %s", cmd)
+    output = subprocess.check_output(cmd, shell=True)
+
     global docker_container_id
     docker_container_id = output.decode("utf-8").split("\n")[0]
     setup_test_container_props.container_id = docker_container_id
 
     def finalizer():
-        subprocess.check_output("docker stop {}".format(docker_container_id), shell=True)
+        cmd = "docker stop {}".format(docker_container_id)
+        logging.debug("setup_test_container: %s", cmd)
+        subprocess.check_output(cmd, shell=True)
     request.addfinalizer(finalizer)
 
     ready = wait_for_container_boot(docker_container_id)
