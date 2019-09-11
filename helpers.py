@@ -19,6 +19,7 @@ import signal
 import stat
 import subprocess
 import time
+import logging
 from fabric import Config
 from fabric import Connection
 from paramiko import SSHException
@@ -34,8 +35,16 @@ def _prepare_key_arg(key_filename):
 
 def put(conn, file, key_filename=None, local_path=".", remote_path="."):
     key_arg = _prepare_key_arg(key_filename)
-    conn.local("scp %s -C -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P %s %s %s@%s:%s" %
-          (key_arg, conn.port, os.path.join(local_path, file), conn.user, conn.host, remote_path))
+    cmd = "scp %s -C -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P %s %s %s@%s:%s" % (key_arg, conn.port, os.path.join(local_path, file), conn.user, conn.host, remote_path)
+    logging.debug(cmd)
+    conn.local(cmd)
+
+def run(conn, command, key_filename=None, warn=False):
+    key_arg = _prepare_key_arg(key_filename)
+    cmd = "ssh %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=60 -p %s %s@%s %s" % (key_arg, conn.port, conn.user, conn.host, command)
+    logging.debug(cmd)
+    result = conn.local(cmd, warn=warn)
+    return result
 
 class PortForward:
     user = None
