@@ -38,7 +38,7 @@ class ContainerProps:
         self.port = port
         self.qemu_ip = qemu_ip
 
-MenderTestRaspbian = ContainerProps(image_name="mender-test-raspbian",
+MenderTestRaspbian = ContainerProps(image_name="mendersoftware/mender-test-containers:raspbian_latest",
                                     device_type="raspberrypi3",
                                     key_filename=os.path.join(os.path.dirname(os.path.realpath(__file__)), "docker/ssh-keys/key"),
                                     user="pi")
