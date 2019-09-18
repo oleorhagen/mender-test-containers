@@ -2,7 +2,8 @@ image: docker:git
 
 variables:
   RASPBIAN_VERSION: '2019-04-08'
-  DOCKER_REPOSITORY: mendersoftware/mender-test-containers
+  DOCKER_REPOSITORY: 'mendersoftware/mender-test-containers'
+  DOCKER_HUB_USERNAME: 'menderbuildsystem'
 
 stages:
   - test
@@ -59,18 +60,20 @@ build:
       - image.tar
 
 publish:build:master:
-  before_script: []
   stage: publish
   dependencies:
     - build
   services:
     - docker:dind
   script:
-    - echo "publishing image to docker hub"
-    # - docker load -i image.tar
-    # - export COMMIT_TAG="$CI_COMMIT_REF_NAME"_"$CI_COMMIT_SHA";
-    # - docker tag $DOCKER_REPOSITORY:pr $DOCKER_REPOSITORY:$COMMIT_TAG;
-    # - docker push $DOCKER_REPOSITORY:$COMMIT_TAG;
+    - echo "publishing image to Docker hub"
+    - docker load -i image.tar
+    - export COMMIT_TAG="$CI_COMMIT_REF_NAME"_"$CI_COMMIT_SHA";
+    - docker tag $DOCKER_REPOSITORY:pr $DOCKER_REPOSITORY:$COMMIT_TAG;
+    - docker rmi $DOCKER_REPOSITORY:pr
+    - docker tag $DOCKER_REPOSITORY:$COMMIT_TAG $DOCKER_REPOSITORY:raspbian_latest;
+    - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+    - docker push $DOCKER_REPOSITORY:raspbian_latest;
   only:
     - master
   tags:
