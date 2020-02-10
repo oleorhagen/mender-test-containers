@@ -71,7 +71,7 @@ def setup_mender_configured(setup_test_container, setup_tester_ssh_connection, m
 
     try:
         put(setup_tester_ssh_connection, filename, key_filename=setup_test_container.key_filename)
-        setup_tester_ssh_connection.sudo("dpkg -i %s" % filename)
+        setup_tester_ssh_connection.sudo("DEBIAN_FRONTEND=noninteractive dpkg -i %s" % filename)
     finally:
         os.remove(filename)
 
