@@ -33,7 +33,7 @@ def setup_test_container(request, setup_test_container_props, mender_version):
     if setup_test_container_props.append_mender_version:
         image = "%s:%s" % (image, mender_version)
 
-    cmd = "docker run --rm --network host -tid %s" % image
+    cmd = "docker run --rm --network host --privileged -tid %s" % image
     logging.debug("setup_test_container: %s", cmd)
     output = subprocess.check_output(cmd, shell=True)
 
