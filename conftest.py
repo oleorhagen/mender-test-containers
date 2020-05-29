@@ -86,8 +86,10 @@ def setup_mender_configured(
             filename,
             key_filename=setup_test_container.key_filename,
         )
+        # Install deb package and missing dependencies
         setup_tester_ssh_connection.sudo(
-            "DEBIAN_FRONTEND=noninteractive dpkg -i %s" % filename
+            "DEBIAN_FRONTEND=noninteractive dpkg -i %s || sudo apt-get -f -y install"
+            % filename
         )
     finally:
         os.remove(filename)
