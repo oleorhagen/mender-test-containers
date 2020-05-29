@@ -25,6 +25,7 @@ from fabric import Connection
 
 from .helpers import *
 
+
 @pytest.fixture(scope="class")
 def setup_test_container(request, setup_test_container_props, mender_version):
     # This should be parametrized in the mother project.
@@ -45,6 +46,7 @@ def setup_test_container(request, setup_test_container_props, mender_version):
         cmd = "docker stop {}".format(docker_container_id)
         logging.debug("setup_test_container: %s", cmd)
         subprocess.check_output(cmd, shell=True)
+
     request.addfinalizer(finalizer)
 
     ready = wait_for_container_boot(docker_container_id)
@@ -52,26 +54,41 @@ def setup_test_container(request, setup_test_container_props, mender_version):
     assert ready, "Image did not boot. Aborting"
     return setup_test_container_props
 
+
 @pytest.fixture(scope="class")
 def setup_tester_ssh_connection(setup_test_container):
     yield new_tester_ssh_connection(setup_test_container)
 
+
 @pytest.fixture(scope="class")
-def setup_mender_configured(setup_test_container, setup_tester_ssh_connection, mender_deb_version):
-    if setup_tester_ssh_connection.run("test -x /usr/bin/mender", warn=True).exited == 0:
+def setup_mender_configured(
+    setup_test_container, setup_tester_ssh_connection, mender_deb_version
+):
+    if (
+        setup_tester_ssh_connection.run("test -x /usr/bin/mender", warn=True).exited
+        == 0
+    ):
         # If mender is already present, do nothing.
         return
 
-    url = ("https://d1b0l86ne08fsf.cloudfront.net/%s/dist-packages/debian/armhf/mender-client_%s-1_armhf.deb"
-           % (mender_deb_version, mender_deb_version))
+    url = (
+        "https://d1b0l86ne08fsf.cloudfront.net/%s/dist-packages/debian/armhf/mender-client_%s-1_armhf.deb"
+        % (mender_deb_version, mender_deb_version)
+    )
     filename = os.path.basename(url)
     c = requests.get(url, stream=True)
     with open(filename, "wb") as fd:
         fd.write(c.raw.read())
 
     try:
-        put(setup_tester_ssh_connection, filename, key_filename=setup_test_container.key_filename)
-        setup_tester_ssh_connection.sudo("DEBIAN_FRONTEND=noninteractive dpkg -i %s" % filename)
+        put(
+            setup_tester_ssh_connection,
+            filename,
+            key_filename=setup_test_container.key_filename,
+        )
+        setup_tester_ssh_connection.sudo(
+            "DEBIAN_FRONTEND=noninteractive dpkg -i %s" % filename
+        )
     finally:
         os.remove(filename)
 
@@ -84,4 +101,6 @@ def setup_mender_configured(setup_test_container, setup_tester_ssh_connection, m
         raise KeyError("%s is not a recognized machine type" % output)
 
     setup_tester_ssh_connection.sudo("mkdir -p /var/lib/mender")
-    setup_tester_ssh_connection.run("echo device_type=%s | sudo tee /var/lib/mender/device_type" % device_type)
+    setup_tester_ssh_connection.run(
+        "echo device_type=%s | sudo tee /var/lib/mender/device_type" % device_type
+    )
