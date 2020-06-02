@@ -15,6 +15,7 @@
 
 import os
 
+
 class ContainerProps:
     image_name = None
     append_mender_version = None
@@ -28,8 +29,16 @@ class ContainerProps:
     # Will be set once the container is running
     container_id = None
 
-    def __init__(self, image_name, append_mender_version=False, device_type=None, key_filename=None,
-                 user="root", port=8822, qemu_ip="10.0.2.15"):
+    def __init__(
+        self,
+        image_name,
+        append_mender_version=False,
+        device_type=None,
+        key_filename=None,
+        user="root",
+        port=8822,
+        qemu_ip="10.0.2.15",
+    ):
         self.image_name = image_name
         self.append_mender_version = append_mender_version
         self.device_type = device_type
@@ -38,10 +47,19 @@ class ContainerProps:
         self.port = port
         self.qemu_ip = qemu_ip
 
-MenderTestRaspbian = ContainerProps(image_name="mendersoftware/mender-test-containers:raspbian_latest",
-                                    device_type="raspberrypi3",
-                                    key_filename=os.path.join(os.path.dirname(os.path.realpath(__file__)), "docker/ssh-keys/key"),
-                                    user="pi")
-MenderTestQemux86_64 = ContainerProps(image_name="mendersoftware/mender-client-qemu",
-                                      append_mender_version=True,
-                                      key_filename=os.path.join(os.path.dirname(os.path.realpath(__file__)), "docker/ssh-keys/key"))
+
+MenderTestRaspbian = ContainerProps(
+    image_name="mendersoftware/mender-test-containers:raspbian_latest",
+    device_type="raspberrypi3",
+    key_filename=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "docker/ssh-keys/key"
+    ),
+    user="pi",
+)
+MenderTestQemux86_64 = ContainerProps(
+    image_name="mendersoftware/mender-client-qemu",
+    append_mender_version=True,
+    key_filename=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "docker/ssh-keys/key"
+    ),
+)
