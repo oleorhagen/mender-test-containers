@@ -147,9 +147,9 @@ def wait_for_container_boot(docker_container_id):
             "docker logs {} 2>&1".format(docker_container_id), shell=True
         )
 
-        # Check on the last 100 chars only, so that we can detect reboots
+        # Check on the last few chars only, so that we can detect reboots
         if re.search(
-            "(Poky|GNU/Linux).* tty", output.decode("utf-8")[-100:], flags=re.MULTILINE
+            "(Poky|GNU/Linux).* tty", output.decode("utf-8")[-1000:], flags=re.MULTILINE
         ):
             ready = True
 
