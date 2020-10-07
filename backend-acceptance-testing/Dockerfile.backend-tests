@@ -1,0 +1,11 @@
+FROM python:3-slim
+# Install musl runtime support to be able to execute the dynamically linked deployments binary
+# See https://wiki.debian.org/musl
+RUN apt-get -qq update && \
+    apt-get -qy install musl gcc && \
+    echo "/lib/x86_64-linux-gnu" >> /etc/ld-musl-x86_64.d/x86_64-linux-musl.path && \
+    ld-musl-config
+COPY requirements-py3.txt .
+RUN pip3 install -r requirements-py3.txt
+WORKDIR /testing
+ENTRYPOINT ["bash", "/testing/run.sh"]

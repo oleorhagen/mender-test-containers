@@ -49,10 +49,25 @@ build:
     paths:
       - image.tar
 
+build:testing:
+  stage: build
+  dependencies:
+    - build_prep
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_REPOSITORY:acceptance-testing -f backend-acceptance-testing/Dockerfile.backend-tests backend-acceptance-testing
+    - docker save $DOCKER_REPOSITORY:acceptance-testing > testingImage.tar
+  artifacts:
+    expire_in: 2w
+    paths:
+      - testingImage.tar
+
 publish:build:master:
   stage: publish
   dependencies:
     - build
+    - build:testing
   services:
     - docker:dind
   script:
@@ -64,6 +79,8 @@ publish:build:master:
     - docker tag $DOCKER_REPOSITORY:$COMMIT_TAG $DOCKER_REPOSITORY:raspbian_latest;
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
     - docker push $DOCKER_REPOSITORY:raspbian_latest;
+    - docker load -i testingImage.tar
+    - docker push $DOCKER_REPOSITORY:acceptance-testing
   only:
     - master
   tags:
