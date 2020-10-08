@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - commit-message:
+      prefix: "Changelog:All"
+    directory: /backend-acceptance-testing
+    package-ecosystem: docker
+    schedule:
+      interval: weekly
+  - commit-message:
+      prefix: "Changelog:All"
+    directory: /backend-acceptance-testing
+    package-ecosystem: pip
+    schedule:
+      interval: weekly
+  - commit-message:
+      prefix: "Changelog:All"
+    directory: /docker/docker-files-raspbian
+    package-ecosystem: docker
+    schedule:
+      interval: weekly
