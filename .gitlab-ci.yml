@@ -51,8 +51,6 @@ build:
 
 build:testing:
   stage: build
-  dependencies:
-    - build_prep
   services:
     - docker:dind
   script:
@@ -63,11 +61,26 @@ build:testing:
     paths:
       - testingImage.tar
 
+build:qa:
+  stage: build
+  tags:
+    - mender-qa-slave-highcpu
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_REPOSITORY:mender-client-acceptance-testing -f mender-client-acceptance-testing/Dockerfile mender-client-acceptance-testing
+    - docker save $DOCKER_REPOSITORY:mender-client-acceptance-testing > qaTestingImage.tar
+  artifacts:
+    expire_in: 2w
+    paths:
+      - qaTestingImage.tar
+
 publish:build:master:
   stage: publish
   dependencies:
     - build
     - build:testing
+    - build:qa
   services:
     - docker:dind
   script:
@@ -81,6 +94,8 @@ publish:build:master:
     - docker push $DOCKER_REPOSITORY:raspbian_latest;
     - docker load -i testingImage.tar
     - docker push $DOCKER_REPOSITORY:acceptance-testing
+    - docker load -i qaTestingImage.tar
+    - docker push $DOCKER_REPOSITORY:mender-client-acceptance-testing
   only:
     - master
   tags:
