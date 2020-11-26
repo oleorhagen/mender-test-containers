@@ -26,8 +26,7 @@ from fabric import Connection
 from .helpers import *
 
 
-@pytest.fixture(scope="class")
-def setup_test_container(request, setup_test_container_props, mender_version):
+def do_setup_test_container(request, setup_test_container_props, mender_version):
     # This should be parametrized in the mother project.
     image = setup_test_container_props.image_name
 
@@ -56,8 +55,23 @@ def setup_test_container(request, setup_test_container_props, mender_version):
 
 
 @pytest.fixture(scope="class")
+def setup_test_container(request, setup_test_container_props, mender_version):
+    return do_setup_test_container(request, setup_test_container_props, mender_version)
+
+
+@pytest.fixture(scope="function")
+def setup_test_container_f(request, setup_test_container_props, mender_version):
+    return do_setup_test_container(request, setup_test_container_props, mender_version)
+
+
+@pytest.fixture(scope="class")
 def setup_tester_ssh_connection(setup_test_container):
     yield new_tester_ssh_connection(setup_test_container)
+
+
+@pytest.fixture(scope="function")
+def setup_tester_ssh_connection_f(setup_test_container_f):
+    yield new_tester_ssh_connection(setup_test_container_f)
 
 
 @pytest.fixture(scope="class")
