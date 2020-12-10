@@ -13,10 +13,12 @@ RUN apt-get update -qq && apt-get install -yyq $(cat deb-requirements.txt) && ap
 RUN locale-gen --purge en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
 
-COPY requirements-py3.txt .
-RUN pip3 install -r requirements-py3.txt
+# Python 3 requirements from master
+RUN wget https://raw.githubusercontent.com/mendersoftware/meta-mender/master/tests/acceptance/requirements_py3.txt && \
+    pip3 install -r requirements_py3.txt && \
+    rm requirements_py3.txt
 
-# For warrior tests
+# Python 2 requirements from warrior
 RUN apt-get install -y python-pip && \
     pip2 install --upgrade pip && \
     pip2 install requests --upgrade && \
