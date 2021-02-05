@@ -74,6 +74,7 @@ def setup_tester_ssh_connection_f(setup_test_container_f):
     yield new_tester_ssh_connection(setup_test_container_f)
 
 
+# Requires the user to implement mender_deb_version fixture
 @pytest.fixture(scope="class")
 def setup_mender_configured(
     setup_test_container, setup_tester_ssh_connection, mender_deb_version
@@ -86,8 +87,8 @@ def setup_mender_configured(
         return
 
     url = (
-        "https://d1b0l86ne08fsf.cloudfront.net/%s/dist-packages/debian/armhf/mender-client_%s-1_armhf.deb"
-        % (mender_deb_version, mender_deb_version)
+        "https://downloads.mender.io/repos/debian/pool/main/m/mender-client/mender-client_%s-1_armhf.deb"
+        % mender_deb_version
     )
     filename = os.path.basename(url)
     c = requests.get(url, stream=True)
@@ -107,6 +108,9 @@ def setup_mender_configured(
         )
     finally:
         os.remove(filename)
+
+    # Verify that the package was installed
+    setup_tester_ssh_connection.run("dpkg --status mender-client")
 
     output = setup_tester_ssh_connection.run("uname -m").stdout.strip()
     if output == "x86_64":
