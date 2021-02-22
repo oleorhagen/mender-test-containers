@@ -85,6 +85,10 @@ publish:build:master:
     - build:mender-client-acceptance-testing
   services:
     - docker:dind
+  before_script:
+    - export AWS_ACCESS_KEY_ID=$TMP_STORAGE_AWS_ACCESS_KEY_ID
+    - export AWS_SECRET_ACCESS_KEY=$TMP_STORAGE_AWS_SECRET_ACCESS_KEY
+    - apk --update add aws-cli
   script:
     - echo "publishing images to Docker Hub"
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
