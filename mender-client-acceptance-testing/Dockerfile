@@ -5,9 +5,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 # prepare NFS cache for yocto
 RUN mkdir -p /mnt/sstate-cache
 
+# install pyyaml via pip to workardound a later conflict if installed via OS package (awscli depends on python3-yaml)
+RUN apt-get update -qq && apt-get install -yyq python3-pip && pip3 install --upgrade pip && pip3 install pyyaml
+
 # basic tools
 COPY deb-requirements.txt .
-RUN apt-get update -qq && apt-get install -yyq $(cat deb-requirements.txt) && apt-get install -yq linux-modules-`uname -r`
+RUN apt-get install -yyq $(cat deb-requirements.txt) && apt-get install -yq linux-modules-`uname -r`
 
 # Locales
 RUN locale-gen --purge en_US.UTF-8
