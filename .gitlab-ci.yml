@@ -98,6 +98,7 @@ publish:build:master:
     - docker push $DOCKER_REPOSITORY:acceptance-testing
     # Fetch from temporary S3 bucket
     - aws s3 cp s3://mender-gitlab-tmp-storage/$CI_PROJECT_NAME/$CI_PIPELINE_ID/qaTestingImage.tar qaTestingImage.tar
+    - docker load -i qaTestingImage.tar
     - docker push $DOCKER_REPOSITORY:mender-client-acceptance-testing
   only:
     - master
