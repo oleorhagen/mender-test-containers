@@ -128,6 +128,8 @@ def new_tester_ssh_connection(setup_test_container):
             "timeout": 60,
             "banner_timeout": 60,
             "auth_timeout": 60,
+            "allow_agent": False,
+            "look_for_keys": False,
         },
     ) as conn:
 
