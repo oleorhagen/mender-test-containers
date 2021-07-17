@@ -3,4 +3,4 @@
 # Files downloaded through prepare-raspbian-img.sh
 /docker/docker-files-raspbian/*-raspbian-mender-testing.img
 /docker/docker-files-raspbian/kernel-qemu-*
-/docker/docker-files-raspbian/versatile-pb.dtb
+/docker/docker-files-raspbian/versatile-pb*.dtb
