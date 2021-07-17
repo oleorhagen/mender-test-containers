@@ -1,7 +1,7 @@
 image: docker:git
 
 variables:
-  RASPBIAN_VERSION: '2019-04-08'
+  RASPBIAN_VERSION: '2019-07-10'
   DOCKER_REPOSITORY: 'mendersoftware/mender-test-containers'
   DOCKER_HUB_USERNAME: 'menderbuildsystem'
 

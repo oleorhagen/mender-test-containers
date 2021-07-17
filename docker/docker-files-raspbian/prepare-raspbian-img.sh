@@ -10,7 +10,7 @@ show_help_and_exit() {
 Usage: $0 raspbian-version
 
 Arguments:
-    raspbian-version    - Official Raspbian Stretch version, for example 2019-04-08
+    raspbian-version    - Official Raspbian Buster version, for example 2019-07-10
 EOF
   exit 1
 }
@@ -38,8 +38,8 @@ scriptdir=$(cd `dirname $0` && pwd)
 workdir=${currdir}/tmp-work
 mkdir -p ${workdir}
 
-raspbian_filename_zip="${version}-raspbian-stretch-lite.zip"
-raspbian_filename_img="${version}-raspbian-stretch-lite.img"
+raspbian_filename_zip="${version}-raspbian-buster-lite.zip"
+raspbian_filename_img="${version}-raspbian-buster-lite.img"
 raspbian_mender_filename_img="${version}-raspbian-mender-testing.img"
 
 if [ -f ${currdir}/${raspbian_mender_filename_img} ]; then
@@ -55,6 +55,9 @@ cd ${workdir}
 # For some reason, Raspbian version 2019-04-08 is in a folder named 2019-04-09
 if [ ${version} = "2019-04-08" ]; then
     raspbian_url="https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2019-04-09/${raspbian_filename_zip}"
+# For some reason, Raspbian version 2019-07-10 is in a folder named 2019-07-12
+elif [ ${version} = "2019-07-10" ]; then
+    raspbian_url="https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2019-07-12/${raspbian_filename_zip}"
 else
     raspbian_url="https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-${version}/${raspbian_filename_zip}"
 fi
@@ -63,8 +66,8 @@ echo "##### Donwloading and extracting..."
 wget -q -nc ${raspbian_url}
 unzip ${raspbian_filename_zip}
 rm ${raspbian_filename_zip}
-wget -q -nc https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/kernel-qemu-4.14.79-stretch
-wget -q -nc https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/versatile-pb.dtb
+wget -q -nc https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/kernel-qemu-4.19.50-buster
+wget -q -nc https://raw.githubusercontent.com/dhruvvyas90/qemu-rpi-kernel/master/versatile-pb-buster.dtb
 
 echo "##### Preparing image for tests..."
 boot_start=$(fdisk -l ${raspbian_filename_img} | grep Linux | tr -s ' ' | cut -d ' ' -f2)
@@ -80,8 +83,8 @@ sudo umount img-rootfs
 rmdir img-rootfs
 
 mv ${raspbian_filename_img} ${currdir}/${raspbian_mender_filename_img}
-mv kernel-qemu-4.14.79-stretch ${currdir}/
-mv versatile-pb.dtb ${currdir}/
+mv kernel-qemu-4.19.50-buster ${currdir}/
+mv versatile-pb-buster.dtb ${currdir}/
 
 cd ${currdir}
 rm -rf ${workdir}
