@@ -11,7 +11,8 @@ RUN apt-get update -qq && apt-get install -yyq python3-pip && pip3 install --upg
 # Get OS requirements from master
 RUN apt-get install -yyq wget && \
     wget https://raw.githubusercontent.com/mendersoftware/meta-mender/master/tests/acceptance/requirements_deb.txt && \
-    apt-get install -yyq $(cat requirements_deb.txt) && apt-get install -yq linux-modules-`uname -r`
+    apt-get install -yyq $(cat requirements_deb.txt | sed -e 's/libvirt-bin/libvirt-clients/') && \
+    apt-get install -yq linux-modules-`uname -r`
 
 # Locales
 RUN locale-gen --purge en_US.UTF-8
