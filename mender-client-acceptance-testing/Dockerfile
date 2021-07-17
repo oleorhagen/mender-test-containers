@@ -24,7 +24,9 @@ RUN wget https://raw.githubusercontent.com/mendersoftware/meta-mender/master/tes
     rm requirements_py3.txt
 
 # Python 2 requirements from warrior
-RUN apt-get install -y python-pip && \
+RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output /tmp/get-pip.py && \
+    python2 /tmp/get-pip.py && \
+    rm /tmp/get-pip.py && \
     pip2 install --upgrade pip && \
     pip2 install requests --upgrade && \
     pip2 install pytest --upgrade && \
