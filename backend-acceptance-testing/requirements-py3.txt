@@ -3,7 +3,7 @@ crypto
 cryptography==3.4.7
 flask
 minio==5.0.6
-pluggy==0.13.1
+pluggy==1.0.0
 pycrypto
 pymongo==3.11.4
 pytest-ordering==0.6
