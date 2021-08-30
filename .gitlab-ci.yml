@@ -25,7 +25,7 @@ build_prep:
   image: buildpack-deps:scm
   script:
     - cd docker/docker-files-raspbian
-    - apt-get update && apt-get install -yyq sudo unzip
+    - apt-get update && apt-get install -yyq sudo unzip fdisk
     - ./prepare-raspbian-img.sh ${RASPBIAN_VERSION}
     - cd .. && tar -cvf $CI_PROJECT_DIR/docker-files-raspbian.tar docker-files-raspbian
   artifacts:
