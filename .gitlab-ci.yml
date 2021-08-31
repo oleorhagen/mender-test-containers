@@ -21,10 +21,11 @@ include:
 
 build_prep:
   stage: build_prep
+  needs: []
   image: buildpack-deps:scm
   script:
     - cd docker/docker-files-raspbian
-    - apt-get update && apt-get install -yyq sudo unzip
+    - apt-get update && apt-get install -yyq sudo unzip fdisk
     - ./prepare-raspbian-img.sh ${RASPBIAN_VERSION}
     - cd .. && tar -cvf $CI_PROJECT_DIR/docker-files-raspbian.tar docker-files-raspbian
   artifacts:
@@ -51,6 +52,7 @@ build:raspbian_latest:
 
 build:acceptance-testing:
   stage: build
+  needs: []
   services:
     - docker:dind
   script:
@@ -63,6 +65,7 @@ build:acceptance-testing:
 
 build:mender-client-acceptance-testing:
   stage: build
+  needs: []
   tags:
     - mender-qa-slave-highcpu
   services:
