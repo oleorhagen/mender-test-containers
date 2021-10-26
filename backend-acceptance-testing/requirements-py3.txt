@@ -1,6 +1,6 @@
 bravado==9.2.2
 crypto
-cryptography==3.4.8
+cryptography==35.0.0
 flask
 minio==5.0.6
 pluggy==1.0.0
