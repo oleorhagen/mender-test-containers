@@ -2,6 +2,7 @@ bravado==9.2.2
 crypto
 cryptography==35.0.0
 flask
+jsonschema<4.0
 minio==5.0.6
 pluggy==1.0.0
 pycrypto
