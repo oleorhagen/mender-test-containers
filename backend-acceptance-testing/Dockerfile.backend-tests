@@ -1,4 +1,4 @@
-FROM python:3-slim
+FROM python:3.10-slim
 # Install musl runtime support to be able to execute the dynamically linked deployments binary
 # See https://wiki.debian.org/musl
 RUN apt-get -qq update && \
