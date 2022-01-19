@@ -76,6 +76,19 @@ build:gui-e2e-testing:
     paths:
       - guiE2eTestingImage.tar
 
+build:backend-integration-testing:
+  stage: build
+  needs: []
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_REPOSITORY:backend-integration-testing -f backend-integration-testing/Dockerfile backend-integration-testing
+    - docker save $DOCKER_REPOSITORY:backend-integration-testing > integrationTestingImage.tar
+  artifacts:
+    expire_in: 2w
+    paths:
+      - integrationTestingImage.tar
+
 build:mender-client-acceptance-testing:
   stage: build
   needs: []
@@ -98,6 +111,7 @@ publish:build:master:
   dependencies:
     - build:raspbian_latest
     - build:acceptance-testing
+    - build:backend-integration-testing
     - build:gui-e2e-testing
     - build:mender-client-acceptance-testing
   services:
@@ -113,6 +127,8 @@ publish:build:master:
     - docker push $DOCKER_REPOSITORY:raspbian_latest;
     - docker load -i acceptanceTestingImage.tar
     - docker push $DOCKER_REPOSITORY:acceptance-testing
+    - docker load -i integrationTestingImage.tar
+    - docker push $DOCKER_REPOSITORY:backend-integration-testing
     - docker load -i guiE2eTestingImage.tar
     - docker push $DOCKER_REPOSITORY:gui-e2e-testing
     # Fetch from temporary S3 bucket

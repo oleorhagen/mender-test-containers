@@ -14,6 +14,18 @@ updates:
       interval: weekly
   - commit-message:
       prefix: "Changelog:All"
+    directory: /backend-integration-testing
+    package-ecosystem: docker
+    schedule:
+      interval: monthly
+  - commit-message:
+      prefix: "Changelog:All"
+    directory: /backend-integration-testing
+    package-ecosystem: pip
+    schedule:
+      interval: monthly
+  - commit-message:
+      prefix: "Changelog:All"
     directory: /gui-e2e-testing
     package-ecosystem: docker
     schedule:
