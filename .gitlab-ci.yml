@@ -76,6 +76,19 @@ build:gui-e2e-testing:
     paths:
       - guiE2eTestingImage.tar
 
+build:backend-integration-testing:
+  stage: build
+  needs: []
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_REPOSITORY:backend-integration-testing -f backend-integration-testing/Dockerfile backend-integration-testing
+    - docker save $DOCKER_REPOSITORY:backend-integration-testing > integrationTestingImage.tar
+  artifacts:
+    expire_in: 2w
+    paths:
+      - integrationTestingImage.tar
+
 build:mender-client-acceptance-testing:
   stage: build
   needs: []
@@ -86,26 +99,29 @@ build:mender-client-acceptance-testing:
   before_script:
     - export AWS_ACCESS_KEY_ID=$TMP_STORAGE_AWS_ACCESS_KEY_ID
     - export AWS_SECRET_ACCESS_KEY=$TMP_STORAGE_AWS_SECRET_ACCESS_KEY
-    - apk --update add aws-cli
+    - apk add --no-cache aws-cli
   script:
     - docker build -t $DOCKER_REPOSITORY:mender-client-acceptance-testing -f mender-client-acceptance-testing/Dockerfile mender-client-acceptance-testing
     - docker save $DOCKER_REPOSITORY:mender-client-acceptance-testing > qaTestingImage.tar
     # Artifact is too large for GitLab, save in temporary S3 bucket
     - aws s3 cp qaTestingImage.tar s3://mender-gitlab-tmp-storage/$CI_PROJECT_NAME/$CI_PIPELINE_ID/qaTestingImage.tar
 
-publish:build:master:
+.template:publish:master:
   stage: publish
+  services:
+    - docker:dind
+  only:
+    - master
+  tags:
+    - docker
+
+publish:build:master:
+  extends: .template:publish:master
   dependencies:
     - build:raspbian_latest
     - build:acceptance-testing
+    - build:backend-integration-testing
     - build:gui-e2e-testing
-    - build:mender-client-acceptance-testing
-  services:
-    - docker:dind
-  before_script:
-    - export AWS_ACCESS_KEY_ID=$TMP_STORAGE_AWS_ACCESS_KEY_ID
-    - export AWS_SECRET_ACCESS_KEY=$TMP_STORAGE_AWS_SECRET_ACCESS_KEY
-    - apk --update add aws-cli
   script:
     - echo "publishing images to Docker Hub"
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
@@ -113,13 +129,23 @@ publish:build:master:
     - docker push $DOCKER_REPOSITORY:raspbian_latest;
     - docker load -i acceptanceTestingImage.tar
     - docker push $DOCKER_REPOSITORY:acceptance-testing
+    - docker load -i integrationTestingImage.tar
+    - docker push $DOCKER_REPOSITORY:backend-integration-testing
     - docker load -i guiE2eTestingImage.tar
     - docker push $DOCKER_REPOSITORY:gui-e2e-testing
+
+publish:mender-client-acceptance-testing:master:
+  extends: .template:publish:master
+  dependencies:
+    - build:mender-client-acceptance-testing
+  before_script:
+    - export AWS_ACCESS_KEY_ID=$TMP_STORAGE_AWS_ACCESS_KEY_ID
+    - export AWS_SECRET_ACCESS_KEY=$TMP_STORAGE_AWS_SECRET_ACCESS_KEY
+    - apk add --no-cache aws-cli
+  script:
+    - echo "publishing client acceptance test image to Docker Hub"
+    - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
     # Fetch from temporary S3 bucket
     - aws s3 cp s3://mender-gitlab-tmp-storage/$CI_PROJECT_NAME/$CI_PIPELINE_ID/qaTestingImage.tar qaTestingImage.tar
     - docker load -i qaTestingImage.tar
     - docker push $DOCKER_REPOSITORY:mender-client-acceptance-testing
-  only:
-    - master
-  tags:
-    - docker
