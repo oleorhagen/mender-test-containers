@@ -63,6 +63,19 @@ build:acceptance-testing:
     paths:
       - acceptanceTestingImage.tar
 
+build:gui-e2e-testing:
+  stage: build
+  needs: []
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_REPOSITORY:gui-e2e-testing -f gui-e2e-testing/Dockerfile gui-e2e-testing
+    - docker save $DOCKER_REPOSITORY:gui-e2e-testing > guiE2eTestingImage.tar
+  artifacts:
+    expire_in: 2w
+    paths:
+      - guiE2eTestingImage.tar
+
 build:mender-client-acceptance-testing:
   stage: build
   needs: []
@@ -85,6 +98,7 @@ publish:build:master:
   dependencies:
     - build:raspbian_latest
     - build:acceptance-testing
+    - build:gui-e2e-testing
     - build:mender-client-acceptance-testing
   services:
     - docker:dind
@@ -99,6 +113,8 @@ publish:build:master:
     - docker push $DOCKER_REPOSITORY:raspbian_latest;
     - docker load -i acceptanceTestingImage.tar
     - docker push $DOCKER_REPOSITORY:acceptance-testing
+    - docker load -i guiE2eTestingImage.tar
+    - docker push $DOCKER_REPOSITORY:gui-e2e-testing
     # Fetch from temporary S3 bucket
     - aws s3 cp s3://mender-gitlab-tmp-storage/$CI_PROJECT_NAME/$CI_PIPELINE_ID/qaTestingImage.tar qaTestingImage.tar
     - docker load -i qaTestingImage.tar
