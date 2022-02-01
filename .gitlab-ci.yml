@@ -68,13 +68,17 @@ build:gui-e2e-testing:
   needs: []
   services:
     - docker:dind
+  before_script:
+    - apk add --no-cache aws-cli curl
+    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
   script:
     - docker build -t $DOCKER_REPOSITORY:gui-e2e-testing -f gui-e2e-testing/Dockerfile gui-e2e-testing
     - docker save $DOCKER_REPOSITORY:gui-e2e-testing > guiE2eTestingImage.tar
+    # Upload to temporary S3 bucket
+    - mender_ci_save_tmp_artifact guiE2eTestingImage.tar
   artifacts:
-    expire_in: 2w
     paths:
-      - guiE2eTestingImage.tar
+      - checksums
 
 build:backend-integration-testing:
   stage: build
@@ -97,16 +101,18 @@ build:mender-client-acceptance-testing:
   services:
     - docker:dind
   before_script:
-    - export AWS_ACCESS_KEY_ID=$TMP_STORAGE_AWS_ACCESS_KEY_ID
-    - export AWS_SECRET_ACCESS_KEY=$TMP_STORAGE_AWS_SECRET_ACCESS_KEY
-    - apk add --no-cache aws-cli
+    - apk add --no-cache aws-cli curl
+    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
   script:
     - docker build -t $DOCKER_REPOSITORY:mender-client-acceptance-testing -f mender-client-acceptance-testing/Dockerfile mender-client-acceptance-testing
     - docker save $DOCKER_REPOSITORY:mender-client-acceptance-testing > qaTestingImage.tar
-    # Artifact is too large for GitLab, save in temporary S3 bucket
-    - aws s3 cp qaTestingImage.tar s3://mender-gitlab-tmp-storage/$CI_PROJECT_NAME/$CI_PIPELINE_ID/qaTestingImage.tar
+    # Upload to temporary S3 bucket
+    - mender_ci_save_tmp_artifact qaTestingImage.tar
+  artifacts:
+    paths:
+      - checksums
 
-.template:publish:master:
+publish:build:master:
   stage: publish
   services:
     - docker:dind
@@ -114,14 +120,18 @@ build:mender-client-acceptance-testing:
     - master
   tags:
     - docker
-
-publish:build:master:
-  extends: .template:publish:master
   dependencies:
     - build:raspbian_latest
     - build:acceptance-testing
     - build:backend-integration-testing
     - build:gui-e2e-testing
+    - build:mender-client-acceptance-testing
+  before_script:
+    - apk add --no-cache aws-cli curl
+    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
+    # Fetch from temporary S3 bucket
+    - mender_ci_load_tmp_artifact guiE2eTestingImage.tar
+    - mender_ci_load_tmp_artifact qaTestingImage.tar
   script:
     - echo "publishing images to Docker Hub"
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
@@ -133,19 +143,5 @@ publish:build:master:
     - docker push $DOCKER_REPOSITORY:backend-integration-testing
     - docker load -i guiE2eTestingImage.tar
     - docker push $DOCKER_REPOSITORY:gui-e2e-testing
-
-publish:mender-client-acceptance-testing:master:
-  extends: .template:publish:master
-  dependencies:
-    - build:mender-client-acceptance-testing
-  before_script:
-    - export AWS_ACCESS_KEY_ID=$TMP_STORAGE_AWS_ACCESS_KEY_ID
-    - export AWS_SECRET_ACCESS_KEY=$TMP_STORAGE_AWS_SECRET_ACCESS_KEY
-    - apk add --no-cache aws-cli
-  script:
-    - echo "publishing client acceptance test image to Docker Hub"
-    - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
-    # Fetch from temporary S3 bucket
-    - aws s3 cp s3://mender-gitlab-tmp-storage/$CI_PROJECT_NAME/$CI_PIPELINE_ID/qaTestingImage.tar qaTestingImage.tar
     - docker load -i qaTestingImage.tar
     - docker push $DOCKER_REPOSITORY:mender-client-acceptance-testing
