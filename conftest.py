@@ -86,10 +86,8 @@ def setup_mender_configured(
         # If mender is already present, do nothing.
         return
 
-    url = (
-        "https://downloads.mender.io/repos/debian/pool/main/m/mender-client/mender-client_%s-1_armhf.deb"
-        % mender_deb_version
-    )
+    url = "https://downloads.mender.io/repos/debian/pool/main/m/mender-client/"
+    url += f"mender-client_{mender_deb_version}-1%2bdebian%2bbuster_armhf.deb"
     filename = os.path.basename(url)
     c = requests.get(url, stream=True)
     with open(filename, "wb") as fd:
