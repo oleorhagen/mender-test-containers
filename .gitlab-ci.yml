@@ -136,12 +136,22 @@ publish:build:master:
     - echo "publishing images to Docker Hub"
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
     - docker load -i raspbianImage.tar
-    - docker push $DOCKER_REPOSITORY:raspbian_latest;
+    - docker push $DOCKER_REPOSITORY:raspbian_latest
+    - rm raspbianImage.tar
+    - docker rm $DOCKER_REPOSITORY:raspbian_latest
     - docker load -i acceptanceTestingImage.tar
     - docker push $DOCKER_REPOSITORY:acceptance-testing
+    - rm acceptanceTestingImage.tar
+    - docker rm $DOCKER_REPOSITORY:acceptance-testing
     - docker load -i integrationTestingImage.tar
     - docker push $DOCKER_REPOSITORY:backend-integration-testing
+    - rm integrationTestingImage.tar
+    - docker rm $DOCKER_REPOSITORY:backend-integration-testing
     - docker load -i guiE2eTestingImage.tar
     - docker push $DOCKER_REPOSITORY:gui-e2e-testing
+    - rm guiE2eTestingImage.tar
+    - docker rm $DOCKER_REPOSITORY:gui-e2e-testing
     - docker load -i qaTestingImage.tar
     - docker push $DOCKER_REPOSITORY:mender-client-acceptance-testing
+    - rm qaTestingImage.tar
+    - docker rm $DOCKER_REPOSITORY:mender-client-acceptance-testing
