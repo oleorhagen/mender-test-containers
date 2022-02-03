@@ -112,7 +112,7 @@ build:mender-client-acceptance-testing:
     paths:
       - checksums
 
-publish:build:master:
+.template:publish:
   stage: publish
   services:
     - docker:dind
@@ -120,38 +120,58 @@ publish:build:master:
     - master
   tags:
     - docker
+  before_script:
+    - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+
+publish:raspbian_latest:
+  extends: .template:publish
   dependencies:
     - build:raspbian_latest
+  script:
+    - echo "publishing image to Docker Hub"
+    - docker load -i raspbianImage.tar
+    - docker push $DOCKER_REPOSITORY:raspbian_latest
+
+publish:acceptance-testing:
+  extends: .template:publish
+  dependencies:
     - build:acceptance-testing
+  script:
+    - echo "publishing image to Docker Hub"
+    - docker load -i acceptanceTestingImage.tar
+    - docker push $DOCKER_REPOSITORY:acceptance-testing
+
+publish:backend-integration-testing:
+  extends: .template:publish
+  dependencies:
     - build:backend-integration-testing
+  script:
+    - echo "publishing image to Docker Hub"
+    - docker load -i integrationTestingImage.tar
+    - docker push $DOCKER_REPOSITORY:backend-integration-testing
+
+publish:gui-e2e-testing:
+  extends: .template:publish
+  dependencies:
     - build:gui-e2e-testing
-    - build:mender-client-acceptance-testing
-  before_script:
+  script:
     - apk add --no-cache aws-cli curl
     - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
     # Fetch from temporary S3 bucket
     - mender_ci_load_tmp_artifact guiE2eTestingImage.tar
-    - mender_ci_load_tmp_artifact qaTestingImage.tar
-  script:
-    - echo "publishing images to Docker Hub"
-    - echo -n $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
-    - docker load -i raspbianImage.tar
-    - docker push $DOCKER_REPOSITORY:raspbian_latest
-    - rm raspbianImage.tar
-    - docker image rm $DOCKER_REPOSITORY:raspbian_latest
-    - docker load -i acceptanceTestingImage.tar
-    - docker push $DOCKER_REPOSITORY:acceptance-testing
-    - rm acceptanceTestingImage.tar
-    - docker image rm $DOCKER_REPOSITORY:acceptance-testing
-    - docker load -i integrationTestingImage.tar
-    - docker push $DOCKER_REPOSITORY:backend-integration-testing
-    - rm integrationTestingImage.tar
-    - docker image rm $DOCKER_REPOSITORY:backend-integration-testing
+    - echo "publishing image to Docker Hub"
     - docker load -i guiE2eTestingImage.tar
     - docker push $DOCKER_REPOSITORY:gui-e2e-testing
-    - rm guiE2eTestingImage.tar
-    - docker image rm $DOCKER_REPOSITORY:gui-e2e-testing
+
+publish:mender-client-acceptance-testing:
+  extends: .template:publish
+  dependencies:
+    - build:mender-client-acceptance-testing
+  script:
+    - apk add --no-cache aws-cli curl
+    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
+    # Fetch from temporary S3 bucket
+    - mender_ci_load_tmp_artifact qaTestingImage.tar
+    - echo "publishing image to Docker Hub"
     - docker load -i qaTestingImage.tar
     - docker push $DOCKER_REPOSITORY:mender-client-acceptance-testing
-    - rm qaTestingImage.tar
-    - docker image rm $DOCKER_REPOSITORY:mender-client-acceptance-testing
