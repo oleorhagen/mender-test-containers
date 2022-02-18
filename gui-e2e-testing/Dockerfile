@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.18.1
+FROM mcr.microsoft.com/playwright:v1.19.1
 WORKDIR /e2e
 ENV CI=1
 RUN curl -SL --fail -P fixtures "https://dgsbl4vditpls.cloudfront.net/mender-demo-artifact.mender" \
