@@ -9,7 +9,7 @@ pluggy==1.0.0
 pycrypto
 pymongo==4.0.1
 pytest-ordering==0.6
-pytest==6.2.5
+pytest==7.1.1
 pyyaml
 redis==4.1.4
 requests
