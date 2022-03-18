@@ -7,7 +7,7 @@ jsonschema<4.0
 minio==5.0.6
 pluggy==1.0.0
 pycrypto
-pymongo==4.0.1
+pymongo==4.0.2
 pytest-ordering==0.6
 pytest==7.1.1
 pyyaml
