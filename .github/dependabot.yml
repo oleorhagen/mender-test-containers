@@ -5,13 +5,13 @@ updates:
     directory: /backend-acceptance-testing
     package-ecosystem: docker
     schedule:
-      interval: weekly
+      interval: monthly
   - commit-message:
       prefix: "chore"
     directory: /backend-acceptance-testing
     package-ecosystem: pip
     schedule:
-      interval: weekly
+      interval: monthly
   - commit-message:
       prefix: "chore"
     directory: /backend-integration-testing
@@ -32,19 +32,19 @@ updates:
       interval: monthly
   - commit-message:
       prefix: "chore"
-    directory: /qa-acceptance-testing
+    directory: /mender-client-acceptance-testing
     package-ecosystem: docker
     schedule:
-      interval: weekly
+      interval: monthly
   - commit-message:
       prefix: "chore"
-    directory: /qa-acceptance-testing
+    directory: /mender-client-acceptance-testing
     package-ecosystem: pip
     schedule:
-      interval: weekly
+      interval: monthly
   - commit-message:
       prefix: "chore"
     directory: /docker/docker-files-raspbian
     package-ecosystem: docker
     schedule:
-      interval: weekly
+      interval: monthly
