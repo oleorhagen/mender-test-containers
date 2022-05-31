@@ -1,6 +1,6 @@
 bravado==9.2.2
 crypto
-cryptography==36.0.1
+cryptography==37.0.2
 docker==5.0.3
 flask
 jsonschema<4.0
