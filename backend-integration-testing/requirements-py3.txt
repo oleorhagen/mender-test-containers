@@ -1,6 +1,6 @@
 attrs==21.4.0
 azure-iot-hub==2.6.0
-certifi==2021.10.8
+certifi==2022.5.18.1
 cffi==1.15.0
 chardet==4.0.0
 cryptography==37.0.1
@@ -22,7 +22,7 @@ pytest==7.1.2
 pytest-forked==1.4.0
 pytest-html==3.1.1
 pytest-httpserver==1.0.4
-pytest-metadata==1.11.0
+pytest-metadata==2.0.1
 pytest-xdist==2.5.0
 PyYAML==6.0
 pyzbar==0.1.9
