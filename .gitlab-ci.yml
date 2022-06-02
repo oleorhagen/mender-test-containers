@@ -97,7 +97,7 @@ build:mender-client-acceptance-testing:
   stage: build
   needs: []
   tags:
-    - mender-qa-slave-highcpu
+    - mender-qa-slave-highcpu-test
   services:
     - docker:dind
   before_script:
