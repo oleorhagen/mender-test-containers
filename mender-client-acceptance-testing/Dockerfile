@@ -11,7 +11,11 @@ RUN apt-get update -qq && apt-get install -yyq python3-pip && pip3 install --upg
 # Get OS requirements from master
 RUN apt-get install -yyq wget && \
     wget https://raw.githubusercontent.com/mendersoftware/meta-mender/master/tests/acceptance/requirements_deb.txt && \
-    apt-get install -yyq $(cat requirements_deb.txt) && apt-get install -yq linux-modules-`uname -r`
+    apt-get install -yyq $(cat requirements_deb.txt) && apt-get install -yq linux-modules-`uname -r` && \
+    apt-get remove -yyq docker docker.io containerd runc && apt-get install -yyq ca-certificates curl gnupg lsb-release && \
+    mkdir -p /etc/apt/keyrings && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update -qq && apt-get install -yyq docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Locales
 RUN locale-gen --purge en_US.UTF-8
