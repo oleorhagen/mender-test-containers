@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -21,25 +21,6 @@ ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
 RUN wget https://raw.githubusercontent.com/mendersoftware/meta-mender/master/tests/acceptance/requirements_py3.txt && \
     pip3 install -r requirements_py3.txt && \
     rm requirements_py3.txt
-
-# Python 2 requirements from warrior
-RUN apt-get install -y python-pip && \
-    pip2 install --upgrade pip && \
-    pip2 install requests --upgrade && \
-    pip2 install pytest --upgrade && \
-    pip2 install filelock --upgrade && \
-    pip2 install pytest-xdist --upgrade && \
-    pip2 install pytest-html --upgrade && \
-    pip2 install -I fabric==1.14.0 && \
-    pip2 install psutil --upgrade && \
-    pip2 install boto3 --upgrade && \
-    pip2 install pycrypto --upgrade && \
-    wget https://raw.githubusercontent.com/mendersoftware/meta-mender/warrior/tests/acceptance/requirements.txt && \
-    pip2 install -r requirements.txt && \
-    rm requirements.txt
-
-# golang from upstream
-RUN wget -q https://storage.googleapis.com/golang/go1.12.linux-amd64.tar.gz && gunzip -c go1.12.linux-amd64.tar.gz | (cd /usr/local && tar x) && ln -sf /usr/local/go/bin/go /usr/local/bin/go &&  ln -sf /usr/local/go/bin/godoc /usr/local/bin/godoc && ln -sf /usr/local/go/bin/gofmt /usr/local/bin/gofmt
 
 # mender user dir
 RUN useradd -m -u 1010 mender && usermod -a -G kvm mender && usermod -a -G docker mender
