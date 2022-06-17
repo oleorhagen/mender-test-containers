@@ -38,7 +38,7 @@ def _prepare_key_arg(key_filename):
 def put(conn, file, key_filename=None, local_path=".", remote_path="."):
     key_arg = _prepare_key_arg(key_filename)
     cmd = (
-        "scp %s -C -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P %s %s %s@%s:%s"
+        "scp %s -C -O -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P %s %s %s@%s:%s"
         % (
             key_arg,
             conn.port,
