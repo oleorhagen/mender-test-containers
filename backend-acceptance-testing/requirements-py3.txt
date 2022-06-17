@@ -14,6 +14,7 @@ pyyaml
 redis==4.3.2
 redo==2.0.4
 requests
+semver==2.13.0
 stripe
 tornado
 twisted
