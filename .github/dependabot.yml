@@ -1,50 +1,58 @@
 version: 2
 updates:
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /backend-acceptance-testing
     package-ecosystem: docker
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /backend-acceptance-testing
     package-ecosystem: pip
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /backend-integration-testing
     package-ecosystem: docker
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /backend-integration-testing
     package-ecosystem: pip
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /gui-e2e-testing
     package-ecosystem: docker
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /mender-client-acceptance-testing
     package-ecosystem: docker
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /mender-client-acceptance-testing
     package-ecosystem: pip
     schedule:
       interval: monthly
+      day: saturday
   - commit-message:
-      prefix: "chore"
+      prefix: chore
     directory: /docker/docker-files-raspbian
     package-ecosystem: docker
     schedule:
       interval: monthly
+      day: saturday
