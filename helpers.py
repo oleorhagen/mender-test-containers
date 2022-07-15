@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2019 Northern.tech AS
+# Copyright 2022 Northern.tech AS
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ class PortForward:
         try:
             key_arg = _prepare_key_arg(self.key_filename).split()
             self.args = (
-                ["ssh", "-N", "-f"]
+                ["ssh", "-4", "-N", "-f"]
                 + key_arg
                 + [
                     "-L",
