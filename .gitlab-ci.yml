@@ -4,6 +4,7 @@ variables:
   RASPBIAN_VERSION: '2019-07-10'
   DOCKER_REPOSITORY: 'mendersoftware/mender-test-containers'
   DOCKER_HUB_USERNAME: 'menderbuildsystem'
+  DOCKER_BUILDKIT: 1
 
 stages:
   - test
