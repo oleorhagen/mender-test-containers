@@ -8,7 +8,7 @@ cryptography==37.0.4
 docker==5.0.3
 execnet==1.9.0
 fabric==2.7.1
-filelock==3.7.1
+filelock==3.8.0
 idna==3.3
 iniconfig==1.1.1
 kubernetes==24.2.0
