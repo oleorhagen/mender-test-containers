@@ -4,7 +4,7 @@ boto3==1.24.66
 certifi==2022.6.15
 cffi==1.15.1
 chardet==5.0.0
-cryptography==37.0.4
+cryptography==38.0.3
 docker==6.0.0
 execnet==1.9.0
 fabric==2.7.1
