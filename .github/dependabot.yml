@@ -10,6 +10,7 @@ updates:
   - commit-message:
       prefix: chore
     directory: /backend-acceptance-testing
+    open-pull-requests-limit: 20
     package-ecosystem: pip
     schedule:
       interval: monthly
@@ -24,6 +25,7 @@ updates:
   - commit-message:
       prefix: chore
     directory: /backend-integration-testing
+    open-pull-requests-limit: 20
     package-ecosystem: pip
     schedule:
       interval: monthly
@@ -45,6 +47,7 @@ updates:
   - commit-message:
       prefix: chore
     directory: /mender-client-acceptance-testing
+    open-pull-requests-limit: 20
     package-ecosystem: pip
     schedule:
       interval: monthly
