@@ -33,8 +33,6 @@ build_prep:
     expire_in: 2w
     paths:
       - docker-files-raspbian.tar
-  tags:
-    - mender-qa-slave
 
 build:raspbian_latest:
   stage: build
