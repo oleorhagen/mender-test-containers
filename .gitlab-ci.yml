@@ -33,8 +33,6 @@ build_prep:
     expire_in: 2w
     paths:
       - docker-files-raspbian.tar
-  tags:
-    - mender-qa-slave
 
 build:raspbian_latest:
   stage: build
@@ -98,7 +96,8 @@ build:mender-client-acceptance-testing:
   stage: build
   needs: []
   tags:
-    - mender-qa-slave-highcpu
+    # KVM support requires the same type of GCP machine as the tests will use
+    - mender-qa-worker-client-acceptance-tests
   services:
     - docker:dind
   before_script:
