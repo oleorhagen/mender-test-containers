@@ -192,6 +192,130 @@ build:aws-k8s-pipeline-toolbox:
         --push
         aws-k8s-toolbox
 
+.template:build:mender-dist-packages-image:
+  stage: build
+  needs: []
+  image: docker:git
+  services:
+    - docker:dind
+  before_script:
+    - apk --update --no-cache add bash curl aws-cli
+    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
+  script:
+    # GPG key is available only in protected branches
+    - GPG_KEY_BUILD="$GPG_PRIV_KEY_BUILD"
+      ./mender-dist-packages-building/docker-build-image $DISTRO $RELEASE $ARCH
+    - docker save $DOCKER_REPOSITORY:mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH -o mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
+    - mender_ci_save_tmp_artifact mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
+  artifacts:
+    paths:
+      - checksums
+
+build:mender-dist-packages-image:debian:buster:amd64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "buster"
+    ARCH: "amd64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:debian:buster:armhf:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "buster"
+    ARCH: "armhf"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:debian:buster:arm64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "buster"
+    ARCH: "arm64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:debian:bullseye:amd64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "bullseye"
+    ARCH: "amd64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:debian:bullseye:armhf:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "bullseye"
+    ARCH: "armhf"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:debian:bullseye:arm64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "bullseye"
+    ARCH: "arm64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:bionic:amd64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "bionic"
+    ARCH: "amd64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:bionic:armhf:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "bionic"
+    ARCH: "armhf"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:bionic:arm64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "bionic"
+    ARCH: "arm64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:focal:amd64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "focal"
+    ARCH: "amd64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:focal:armhf:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "focal"
+    ARCH: "armhf"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:focal:arm64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "focal"
+    ARCH: "arm64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:jammy:amd64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "jammy"
+    ARCH: "amd64"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:jammy:armhf:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "jammy"
+    ARCH: "armhf"
+  extends: .template:build:mender-dist-packages-image
+
+build:mender-dist-packages-image:ubuntu:jammy:arm64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "jammy"
+    ARCH: "arm64"
+  extends: .template:build:mender-dist-packages-image
+
 .template:publish:
   stage: publish
   services:
@@ -295,3 +419,148 @@ publish:aws-k8s-pipeline-toolbox:
     CONTAINER_TAG: "aws-k8s-v1"
   script:
     - *tag_n_push_to_gitlab_registry
+
+.template:publish:mender-dist-packages-image:
+  extends: .template:publish
+  script:
+    - apk --update --no-cache add bash curl aws-cli
+    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
+    # Fetch from temporary S3 bucket
+    - mender_ci_load_tmp_artifact mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
+    - docker load -i mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
+    - docker push $DOCKER_REPOSITORY:mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH
+
+publish:mender-dist-packages-image:debian:buster:amd64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "buster"
+    ARCH: "amd64"
+  dependencies:
+    - build:mender-dist-packages-image:debian:buster:amd64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:debian:buster:armhf:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "buster"
+    ARCH: "armhf"
+  dependencies:
+    - build:mender-dist-packages-image:debian:buster:armhf
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:debian:buster:arm64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "buster"
+    ARCH: "arm64"
+  dependencies:
+    - build:mender-dist-packages-image:debian:buster:arm64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:debian:bullseye:amd64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "bullseye"
+    ARCH: "amd64"
+  dependencies:
+    - build:mender-dist-packages-image:debian:bullseye:amd64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:debian:bullseye:armhf:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "bullseye"
+    ARCH: "armhf"
+  dependencies:
+    - build:mender-dist-packages-image:debian:bullseye:armhf
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:debian:bullseye:arm64:
+  variables:
+    DISTRO: "debian"
+    RELEASE: "bullseye"
+    ARCH: "arm64"
+  dependencies:
+    - build:mender-dist-packages-image:debian:bullseye:arm64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:bionic:amd64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "bionic"
+    ARCH: "amd64"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:bionic:amd64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:bionic:armhf:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "bionic"
+    ARCH: "armhf"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:bionic:armhf
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:bionic:arm64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "bionic"
+    ARCH: "arm64"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:bionic:arm64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:focal:amd64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "focal"
+    ARCH: "amd64"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:focal:amd64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:focal:armhf:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "focal"
+    ARCH: "armhf"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:focal:armhf
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:focal:arm64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "focal"
+    ARCH: "arm64"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:focal:arm64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:jammy:amd64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "jammy"
+    ARCH: "amd64"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:jammy:amd64
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:jammy:armhf:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "jammy"
+    ARCH: "armhf"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:jammy:armhf
+  extends: .template:publish:mender-dist-packages-image
+
+publish:mender-dist-packages-image:ubuntu:jammy:arm64:
+  variables:
+    DISTRO: "ubuntu"
+    RELEASE: "jammy"
+    ARCH: "arm64"
+  dependencies:
+    - build:mender-dist-packages-image:ubuntu:jammy:arm64
+  extends: .template:publish:mender-dist-packages-image
