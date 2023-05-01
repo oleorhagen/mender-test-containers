@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.32.1
+FROM mcr.microsoft.com/playwright:v1.33.0
 WORKDIR /e2e
 ENV CI=1
 ADD https://dgsbl4vditpls.cloudfront.net/mender-demo-artifact.mender ./
