@@ -6,6 +6,11 @@ variables:
   DOCKER_HUB_USERNAME: 'menderbuildsystem'
   DOCKER_BUILDKIT: 1
 
+.tag_n_push_to_gitlab_registry: &tag_n_push_to_gitlab_registry
+  - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
+  - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+  - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+
 stages:
   - test
   - build_prep
@@ -212,9 +217,7 @@ publish:raspbian_latest:
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} $DOCKER_REPOSITORY:$CONTAINER_TAG
     - docker push $DOCKER_REPOSITORY:$CONTAINER_TAG
     # Gitlab registry
-    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
-    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - *tag_n_push_to_gitlab_registry
 
 publish:acceptance-testing:
   extends: .template:publish
@@ -229,9 +232,7 @@ publish:acceptance-testing:
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} $DOCKER_REPOSITORY:$CONTAINER_TAG
     - docker push $DOCKER_REPOSITORY:$CONTAINER_TAG
     # Gitlab registry
-    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
-    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - *tag_n_push_to_gitlab_registry
 
 publish:backend-integration-testing:
   extends: .template:publish
@@ -246,9 +247,7 @@ publish:backend-integration-testing:
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} $DOCKER_REPOSITORY:$CONTAINER_TAG
     - docker push $DOCKER_REPOSITORY:$CONTAINER_TAG
     # Gitlab registry
-    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
-    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - *tag_n_push_to_gitlab_registry
 
 publish:gui-e2e-testing:
   extends: .template:publish
@@ -267,9 +266,7 @@ publish:gui-e2e-testing:
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} $DOCKER_REPOSITORY:$CONTAINER_TAG
     - docker push $DOCKER_REPOSITORY:$CONTAINER_TAG
     # Gitlab registry
-    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
-    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - *tag_n_push_to_gitlab_registry
 
 publish:mender-client-acceptance-testing:
   extends: .template:publish
@@ -288,9 +285,7 @@ publish:mender-client-acceptance-testing:
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} $DOCKER_REPOSITORY:$CONTAINER_TAG
     - docker push $DOCKER_REPOSITORY:$CONTAINER_TAG
     # Gitlab registry
-    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
-    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - *tag_n_push_to_gitlab_registry
 
 publish:aws-k8s-pipeline-toolbox:
   extends: .template:publish
@@ -299,6 +294,4 @@ publish:aws-k8s-pipeline-toolbox:
   variables:
     CONTAINER_TAG: "aws-k8s-v1"
   script:
-    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
-    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - *tag_n_push_to_gitlab_registry
