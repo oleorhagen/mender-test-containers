@@ -59,3 +59,10 @@ updates:
     schedule:
       interval: monthly
       day: saturday
+  - commit-message:
+      prefix: chore
+    directory: /aws-k8s-toolbox
+    package-ecosystem: docker
+    schedule:
+      interval: monthly
+      day: saturday

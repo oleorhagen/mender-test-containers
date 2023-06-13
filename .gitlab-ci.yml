@@ -161,6 +161,32 @@ build:mender-client-acceptance-testing:
     paths:
       - checksums
 
+build:aws-k8s-pipeline-toolbox:
+  tags:
+    - mender-qa-worker-generic-light
+  stage: build
+  image: docker
+  needs: []
+  variables:
+    CONTAINER_TAG: "aws-k8s-v1"
+    CI_KUBECTL_VERSION: "1.24.0"
+    CI_HELM_VERSION: "v3.9.0"
+    CI_KUBECONFORM_VERSION: "0.4.14"
+  services:
+    - docker:dind
+  script:
+    - echo "INFO - Building and Pushing ${CONTAINER_TAG}-${CI_PIPELINE_ID} to the registry ${CI_REGISTRY_IMAGE}"
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker build 
+        --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+        -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
+        --build-arg KUBECTL_VERSION=${CI_KUBECTL_VERSION}
+        --build-arg HELM_VERSION=${CI_HELM_VERSION}
+        --build-arg KUBECONFORM_VERSION=${CI_KUBECONFORM_VERSION}
+        -f aws-k8s-toolbox/Dockerfile
+        --push
+        aws-k8s-toolbox
+
 .template:publish:
   stage: publish
   services:
@@ -262,6 +288,17 @@ publish:mender-client-acceptance-testing:
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} $DOCKER_REPOSITORY:$CONTAINER_TAG
     - docker push $DOCKER_REPOSITORY:$CONTAINER_TAG
     # Gitlab registry
+    - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
+    - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+    - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
+
+publish:aws-k8s-pipeline-toolbox:
+  extends: .template:publish
+  dependencies:
+    - build:aws-k8s-pipeline-toolbox
+  variables:
+    CONTAINER_TAG: "aws-k8s-v1"
+  script:
     - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
     - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
     - docker push ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}
