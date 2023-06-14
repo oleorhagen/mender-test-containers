@@ -19,3 +19,4 @@ stripe
 tornado
 twisted
 tz
+urllib3<2
