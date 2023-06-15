@@ -12,3 +12,4 @@ The images in here are used in the following situations:
 | gui-e2e-testing | gui-e2e-testing | [gui](https://github.com/mendersoftware/gui/blob/master/tests/e2e_tests/docker-compose.e2e-tests.yml) |
 | backend-integration-testing | backend-integration-testing | [integration](https://github.com/mendersoftware/integration/blob/master/backend-tests/docker/docker-compose.backend-tests.yml) for use in [Mender QA](https://github.com/mendersoftware/mender-qa/blob/master/gitlab-pipeline/stage/test.yml) |
 | mender-client-acceptance-testing | mender-client-acceptance-testing | [Mender QA](https://github.com/mendersoftware/mender-qa/blob/master/.gitlab-ci.yml) |
+| aws-k8s-v1 | aws-k8s-toolbox | [Mender Helm](https://github.com/mendersoftware/mender-helm/blob/master/.gitlab-ci.yml) |
