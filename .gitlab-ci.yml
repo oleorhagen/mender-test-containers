@@ -254,7 +254,7 @@ publish:gui-e2e-testing:
   dependencies:
     - build:gui-e2e-testing
   variables:
-    CONTAINER_TAG: "backend-integration-testing"
+    CONTAINER_TAG: "gui-e2e-testing"
   script:
     # backward compatibility: pushing to the Docker Hub
     - apk add --no-cache aws-cli curl
