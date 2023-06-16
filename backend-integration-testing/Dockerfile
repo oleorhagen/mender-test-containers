@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.10-bullseye
 
 RUN apt-get -y -qq update && apt-get -qq -y install docker.io libzbar0 apt-transport-https gnupg2 && \
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
