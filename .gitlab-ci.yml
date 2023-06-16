@@ -6,6 +6,16 @@ variables:
   DOCKER_HUB_USERNAME: 'menderbuildsystem'
   DOCKER_BUILDKIT: 1
 
+.mender-dist-packages-image-matrix:
+  parallel:
+    matrix:
+      - DISTRO: debian
+        RELEASE: [buster, bullseye]
+        ARCH: [amd64, armhf, arm64]
+      - DISTRO: ubuntu
+        RELEASE: [bionic, focal, jammy]
+        ARCH: [amd64, armhf, arm64]
+
 .tag_n_push_to_gitlab_registry: &tag_n_push_to_gitlab_registry
   - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
   - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
@@ -192,7 +202,7 @@ build:aws-k8s-pipeline-toolbox:
         --push
         aws-k8s-toolbox
 
-.template:build:mender-dist-packages-image:
+build:mender-dist-packages-image:
   stage: build
   needs: []
   image: docker:git
@@ -212,111 +222,7 @@ build:aws-k8s-pipeline-toolbox:
         -f mender-dist-packages-building/Dockerfile
         --push
         mender-dist-packages-building
-
-build:mender-dist-packages-image:debian:buster:amd64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "buster"
-    ARCH: "amd64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:debian:buster:armhf:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "buster"
-    ARCH: "armhf"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:debian:buster:arm64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "buster"
-    ARCH: "arm64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:debian:bullseye:amd64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "bullseye"
-    ARCH: "amd64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:debian:bullseye:armhf:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "bullseye"
-    ARCH: "armhf"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:debian:bullseye:arm64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "bullseye"
-    ARCH: "arm64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:bionic:amd64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "bionic"
-    ARCH: "amd64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:bionic:armhf:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "bionic"
-    ARCH: "armhf"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:bionic:arm64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "bionic"
-    ARCH: "arm64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:focal:amd64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "focal"
-    ARCH: "amd64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:focal:armhf:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "focal"
-    ARCH: "armhf"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:focal:arm64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "focal"
-    ARCH: "arm64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:jammy:amd64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "jammy"
-    ARCH: "amd64"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:jammy:armhf:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "jammy"
-    ARCH: "armhf"
-  extends: .template:build:mender-dist-packages-image
-
-build:mender-dist-packages-image:ubuntu:jammy:arm64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "jammy"
-    ARCH: "arm64"
-  extends: .template:build:mender-dist-packages-image
+  parallel: !reference [.mender-dist-packages-image-matrix, parallel]
 
 .template:publish:
   stage: publish
@@ -422,143 +328,17 @@ publish:aws-k8s-pipeline-toolbox:
   script:
     - *tag_n_push_to_gitlab_registry
 
-.template:publish:mender-dist-packages-image:
+publish:mender-dist-packages-image:
   extends: .template:publish
+  dependencies:
+    # NOTE: We should depend on each of the jobs individually with:
+    # - "build:mender-dist-packages-image: [${DISTRO}, ${RELEASE}, ${ARCH}]"
+    # However GitLab does not seem to expand these variables on a dependencies
+    # key. Use arbitrary one of them and assume that they all passed (using
+    # depends instead of needs ensures that the whole previous build stage
+    # needs to pass, so it should be safe).
+    - "build:mender-dist-packages-image: [debian, bullseye, amd64]"
   script:
     - CONTAINER_TAG=mender-dist-packages-builder-${DISTRO}-${RELEASE}-${ARCH}
     - *tag_n_push_to_gitlab_registry
-
-publish:mender-dist-packages-image:debian:buster:amd64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "buster"
-    ARCH: "amd64"
-  dependencies:
-    - build:mender-dist-packages-image:debian:buster:amd64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:debian:buster:armhf:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "buster"
-    ARCH: "armhf"
-  dependencies:
-    - build:mender-dist-packages-image:debian:buster:armhf
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:debian:buster:arm64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "buster"
-    ARCH: "arm64"
-  dependencies:
-    - build:mender-dist-packages-image:debian:buster:arm64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:debian:bullseye:amd64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "bullseye"
-    ARCH: "amd64"
-  dependencies:
-    - build:mender-dist-packages-image:debian:bullseye:amd64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:debian:bullseye:armhf:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "bullseye"
-    ARCH: "armhf"
-  dependencies:
-    - build:mender-dist-packages-image:debian:bullseye:armhf
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:debian:bullseye:arm64:
-  variables:
-    DISTRO: "debian"
-    RELEASE: "bullseye"
-    ARCH: "arm64"
-  dependencies:
-    - build:mender-dist-packages-image:debian:bullseye:arm64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:bionic:amd64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "bionic"
-    ARCH: "amd64"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:bionic:amd64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:bionic:armhf:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "bionic"
-    ARCH: "armhf"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:bionic:armhf
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:bionic:arm64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "bionic"
-    ARCH: "arm64"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:bionic:arm64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:focal:amd64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "focal"
-    ARCH: "amd64"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:focal:amd64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:focal:armhf:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "focal"
-    ARCH: "armhf"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:focal:armhf
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:focal:arm64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "focal"
-    ARCH: "arm64"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:focal:arm64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:jammy:amd64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "jammy"
-    ARCH: "amd64"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:jammy:amd64
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:jammy:armhf:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "jammy"
-    ARCH: "armhf"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:jammy:armhf
-  extends: .template:publish:mender-dist-packages-image
-
-publish:mender-dist-packages-image:ubuntu:jammy:arm64:
-  variables:
-    DISTRO: "ubuntu"
-    RELEASE: "jammy"
-    ARCH: "arm64"
-  dependencies:
-    - build:mender-dist-packages-image:ubuntu:jammy:arm64
-  extends: .template:publish:mender-dist-packages-image
+  parallel: !reference [.mender-dist-packages-image-matrix, parallel]
