@@ -198,18 +198,20 @@ build:aws-k8s-pipeline-toolbox:
   image: docker:git
   services:
     - docker:dind
-  before_script:
-    - apk --update --no-cache add bash curl aws-cli
-    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
   script:
-    # GPG key is available only in protected branches
-    - GPG_KEY_BUILD="$GPG_PRIV_KEY_BUILD"
-      ./mender-dist-packages-building/docker-build-image $DISTRO $RELEASE $ARCH
-    - docker save $DOCKER_REPOSITORY:mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH -o mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
-    - mender_ci_save_tmp_artifact mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
-  artifacts:
-    paths:
-      - checksums
+    - CONTAINER_TAG=mender-dist-packages-builder-${DISTRO}-${RELEASE}-${ARCH}
+    - echo "INFO - Building and Pushing ${CONTAINER_TAG}-${CI_PIPELINE_ID} to the registry ${CI_REGISTRY_IMAGE}"
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker build
+        --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
+        --tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
+        --build-arg DISTRO=${DISTRO}
+        --build-arg VERSION=${RELEASE}
+        --build-arg ARCH=${ARCH}
+        --build-arg GPG_KEY_BUILD="${GPG_KEY_BUILD}"
+        -f mender-dist-packages-building/Dockerfile
+        --push
+        mender-dist-packages-building
 
 build:mender-dist-packages-image:debian:buster:amd64:
   variables:
@@ -423,12 +425,8 @@ publish:aws-k8s-pipeline-toolbox:
 .template:publish:mender-dist-packages-image:
   extends: .template:publish
   script:
-    - apk --update --no-cache add bash curl aws-cli
-    - eval "$(curl https://raw.githubusercontent.com/mendersoftware/mendertesting/master/mender-ci-common.sh)"
-    # Fetch from temporary S3 bucket
-    - mender_ci_load_tmp_artifact mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
-    - docker load -i mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH.tar
-    - docker push $DOCKER_REPOSITORY:mender-dist-packages-builder-$DISTRO-$RELEASE-$ARCH
+    - CONTAINER_TAG=mender-dist-packages-builder-${DISTRO}-${RELEASE}-${ARCH}
+    - *tag_n_push_to_gitlab_registry
 
 publish:mender-dist-packages-image:debian:buster:amd64:
   variables:
