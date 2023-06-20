@@ -218,7 +218,6 @@ build:mender-dist-packages-image:
         --build-arg DISTRO=${DISTRO}
         --build-arg VERSION=${RELEASE}
         --build-arg ARCH=${ARCH}
-        --build-arg GPG_KEY_BUILD="${GPG_KEY_BUILD}"
         -f mender-dist-packages-building/Dockerfile
         --push
         mender-dist-packages-building

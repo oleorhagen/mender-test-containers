@@ -114,12 +114,6 @@ RUN if [ "${ARCH}" = "armhf" -a "${DISTRO}" != "debian" ]; then \
         apt-get install -y gcc-arm-linux-gnueabihf; \
     fi
 
-# Import GPG key, if set
-ARG GPG_KEY_BUILD=""
-RUN if [ -n "$GPG_KEY_BUILD" ]; then \
-        echo "$GPG_KEY_BUILD" | gpg --import; \
-    fi
-
 # TODO: Figure out why these packages are required
 RUN if [ "${DISTRO}" = "debian" -a "${ARCH}" = "armhf" ]; then \
         apt-get install -y libmount1:armhf zlib1g:armhf; \
