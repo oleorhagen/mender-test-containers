@@ -6,6 +6,16 @@ variables:
   DOCKER_HUB_USERNAME: 'menderbuildsystem'
   DOCKER_BUILDKIT: 1
 
+.mender-dist-packages-image-matrix:
+  parallel:
+    matrix:
+      - DISTRO: debian
+        RELEASE: [buster, bullseye]
+        ARCH: [amd64, armhf, arm64]
+      - DISTRO: ubuntu
+        RELEASE: [bionic, focal, jammy]
+        ARCH: [amd64, armhf, arm64]
+
 .tag_n_push_to_gitlab_registry: &tag_n_push_to_gitlab_registry
   - docker pull ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
   - docker tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
@@ -192,6 +202,28 @@ build:aws-k8s-pipeline-toolbox:
         --push
         aws-k8s-toolbox
 
+build:mender-dist-packages-image:
+  stage: build
+  needs: []
+  image: docker:git
+  services:
+    - docker:dind
+  script:
+    - CONTAINER_TAG=mender-dist-packages-builder-${DISTRO}-${RELEASE}-${ARCH}
+    - echo "INFO - Building and Pushing ${CONTAINER_TAG}-${CI_PIPELINE_ID} to the registry ${CI_REGISTRY_IMAGE}"
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker build
+        --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
+        --tag ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
+        --build-arg DISTRO=${DISTRO}
+        --build-arg VERSION=${RELEASE}
+        --build-arg ARCH=${ARCH}
+        --build-arg GPG_KEY_BUILD="${GPG_KEY_BUILD}"
+        -f mender-dist-packages-building/Dockerfile
+        --push
+        mender-dist-packages-building
+  parallel: !reference [.mender-dist-packages-image-matrix, parallel]
+
 .template:publish:
   stage: publish
   services:
@@ -295,3 +327,18 @@ publish:aws-k8s-pipeline-toolbox:
     CONTAINER_TAG: "aws-k8s-v1"
   script:
     - *tag_n_push_to_gitlab_registry
+
+publish:mender-dist-packages-image:
+  extends: .template:publish
+  dependencies:
+    # NOTE: We should depend on each of the jobs individually with:
+    # - "build:mender-dist-packages-image: [${DISTRO}, ${RELEASE}, ${ARCH}]"
+    # However GitLab does not seem to expand these variables on a dependencies
+    # key. Use arbitrary one of them and assume that they all passed (using
+    # depends instead of needs ensures that the whole previous build stage
+    # needs to pass, so it should be safe).
+    - "build:mender-dist-packages-image: [debian, bullseye, amd64]"
+  script:
+    - CONTAINER_TAG=mender-dist-packages-builder-${DISTRO}-${RELEASE}-${ARCH}
+    - *tag_n_push_to_gitlab_registry
+  parallel: !reference [.mender-dist-packages-image-matrix, parallel]
