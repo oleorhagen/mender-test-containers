@@ -11,7 +11,7 @@ fabric==2.7.1
 filelock==3.12.2
 idna==3.3
 iniconfig==2.0.0
-kubernetes==24.2.0
+kubernetes==26.1.0
 packaging==21.3
 Pillow==9.3.0
 pluggy==1.0.0
