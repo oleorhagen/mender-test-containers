@@ -17,7 +17,7 @@ Pillow==9.3.0
 pluggy==1.0.0
 py==1.11.0
 pycparser==2.21
-pymongo==4.2.0
+pymongo==4.3.3
 pyotp==2.6.0
 pyparsing==3.0.9
 pytest==7.3.2
