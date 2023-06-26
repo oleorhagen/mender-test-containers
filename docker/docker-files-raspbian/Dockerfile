@@ -1,4 +1,4 @@
-FROM alpine:3.17.2
+FROM alpine:3.18.2
 
 # Docker image to emulate Raspbian stock image with QEMU. See tutorial at:
 # https://github.com/wimvanderbauwhede/limited-systems/wiki/Raspbian-%22stretch%22-for-Raspberry-Pi-3-on-QEMU
