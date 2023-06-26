@@ -1,0 +1,268 @@
+#! /bin/bash
+# Raspberry Pi OS is compiled for ARMv6 support, so that all RPi boards
+# (including Raspberry Pi Zero W) can run with the same binary image. We are
+# therefore forced to use a toolchain tuned for ARMv6 for our packages See the
+# reasoning in this post announcing the 64bit OS:
+# https://www.raspberrypi.com/news/raspberry-pi-os-64-bit/
+
+set -ex
+
+RASPBIAN_VERSION="${RASPBIAN_VERSION:?No Raspbian version set}"
+
+declare -a required_packages_bullseye=(
+    liblzma5
+    liblzma-dev
+    libssl1.1
+    libssl-dev
+    libglib2.0-0
+    libglib2.0-dev
+    libpcre3
+    libpcre3-dev
+    zlib1g
+    zlib1g-dev
+    libffi-dev
+    libffi7
+    libmount1
+    libmount-dev
+    libselinux1
+    libselinux1-dev
+    libpcre2-8-0
+    libpcre2-dev
+    libblkid1
+    libblkid-dev
+    libuuid1
+    uuid-runtime
+    uuid-dev
+    liblmdb-dev
+    liblmdb0
+    libacl1
+    libarchive-dev
+    libarchive13
+    libasan5
+    libatomic1
+    libattr1
+    libblkid1
+    libboost-atomic-dev
+    libboost-atomic1.74-dev
+    libboost-atomic1.74.0
+    libboost-chrono-dev
+    libboost-chrono1.74-dev
+    libboost-chrono1.74.0
+    libboost-date-time1.74-dev
+    libboost-date-time1.74.0
+    libboost-dev
+    libboost-filesystem-dev
+    libboost-filesystem1.74-dev
+    libboost-filesystem1.74.0
+    libboost-log-dev
+    libboost-log1.74-dev
+    libboost-log1.74.0
+    libboost-regex-dev
+    libboost-regex1.74-dev
+    libboost-regex1.74.0
+    libboost-serialization1.74-dev
+    libboost-serialization1.74.0
+    libboost-system1.74-dev
+    libboost-system1.74.0
+    libboost-thread-dev
+    libboost-thread1.74-dev
+    libboost-thread1.74.0
+    libboost1.74-dev
+    libbz2-1.0
+    libgomp1
+    libicu-dev
+    libicu67
+    libidn2-0
+    liblmdb-dev
+    liblmdb0
+    liblz4-1
+    liblzma5
+    libmount1
+    libnettle8
+    libpcre3
+    libselinux1
+    libssl-dev
+    libssl1.1
+    libxml2
+    libzstd1
+)
+
+declare -a required_packages_buster=(
+    liblzma5
+    liblzma-dev
+    libssl1.1
+    libssl-dev
+    libglib2.0-0
+    libglib2.0-dev
+    libpcre3
+    libpcre3-dev
+    zlib1g
+    zlib1g-dev
+    libffi-dev
+    libffi6
+    libmount1
+    libmount-dev
+    libselinux1
+    libselinux1-dev
+    libpcre2-8-0
+    libpcre2-dev
+    libblkid1
+    libblkid-dev
+    libuuid1
+    uuid-runtime
+    uuid-dev
+    liblmdb-dev
+    liblmdb0
+    libacl1
+    libarchive-dev
+    libarchive13
+    libasan5
+    libatomic1
+    libattr1
+    libblkid1
+    libboost-atomic-dev
+    libboost-atomic1.67-dev
+    libboost-atomic1.67.0
+    libboost-chrono-dev
+    libboost-chrono1.67-dev
+    libboost-chrono1.67.0
+    libboost-date-time1.67-dev
+    libboost-date-time1.67.0
+    libboost-dev
+    libboost-filesystem-dev
+    libboost-filesystem1.67-dev
+    libboost-filesystem1.67.0
+    libboost-log-dev
+    libboost-log1.67-dev
+    libboost-log1.67.0
+    libboost-regex-dev
+    libboost-regex1.67-dev
+    libboost-regex1.67.0
+    libboost-serialization1.67-dev
+    libboost-serialization1.67.0
+    libboost-system1.67-dev
+    libboost-system1.67.0
+    libboost-thread-dev
+    libboost-thread1.67-dev
+    libboost-thread1.67.0
+    libboost1.67-dev
+    libbz2-1.0
+    libgcc1
+    libgomp1
+    libicu-dev
+    libicu63
+    libidn2-0
+    liblmdb-dev
+    liblmdb0
+    liblz4-1
+    liblzma5
+    libmount1
+    libnettle6
+    libpcre3
+    libselinux1
+    libssl-dev
+    libssl1.1
+    libxml2
+    libzstd1
+)
+
+declare -A cross_pi_toolchain_buster=(
+    ["packageurl"]="http://raspbian.raspberrypi.org/raspbian/dists/buster/main/binary-armhf/Packages.gz"
+    ["packagecache"]="/var/cache/cross-buster"
+    ["requiredpkgs"]=required_packages_buster
+    ["prefix"]="/opt"
+    ["name"]="cross-pi-gcc-8.3.0-0"
+    ["sysroot"]="/opt/cross-pi-gcc-8.3.0-0/arm-linux-gnueabihf/libc/"
+    ["url"]="https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%208.3.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-8.3.0-pi_0-1.tar.gz/download "
+)
+
+declare -A cross_pi_toolchain_bullseye=(
+    ["packageurl"]="http://raspbian.raspberrypi.org/raspbian/dists/bullseye/main/binary-armhf/Packages.gz"
+    ["packagecache"]="/var/cache/cross-bullseye"
+    ["requiredpkgs"]=required_packages_bullseye
+    ["prefix"]="/opt"
+    ["name"]="cross-pi-gcc-10.3.0-0"
+    ["sysroot"]="/opt/cross-pi-gcc-10.3.0-0/arm-linux-gnueabihf/libc/"
+    ["url"]="https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Bullseye/GCC%2010.3.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.3.0-pi_0-1.tar.gz/download"
+)
+
+declare -a cross_pi_toolchains=(
+    cross_pi_toolchain_buster
+    cross_pi_toolchain_bullseye
+)
+
+function download_pkg() {
+    [[ $# -ne 2 ]] && { echo "Expected two arguments. Got: $#"; exit 1; }
+    echo "Downloading ${pkg}...";
+    local -r cache="$1"
+    local -r pkg="$2"
+    deb_package_url=$(grep Filename ${cache}/Packages | grep /${pkg}_ | grep armhf | tail -n1 | sed 's/Filename: //');
+    filename=$(basename $deb_package_url);
+    curl --location http://raspbian.raspberrypi.org/raspbian/${deb_package_url} -o ${cache}/$filename 2>/dev/null || { echo "Did not find the package: ${pkg} in the raspbian repos.."; exit 1; }
+};
+
+function install_cross_compiler_toolchain() {
+    # Install the armv6 supported cross toolchain from Kotlin
+    [[ $# -ne 2 ]] && { echo "Two arguments required. got $#"; exit 1; }
+    local -r install_prefix="$1"
+    local -r download_url="$2"
+    echo "Installing the cross compiler toolchain to ${install_prefix}<cross-compiler>"
+    (
+        cd "$install_prefix"
+        wget -nc -q "${download_url}" -O cross-compiler-toolchain.tar.gz
+        tar -xvzf *.tar.gz
+        rm *.tar.gz
+    )
+}
+
+# Get depdendencies from upstream, manually donwloading deb packages, and fake pkg-config.
+# NOTE: pkg-config is used from go build to obtain cflags and libs required to build C code; however
+# for armhf we will explicitly pass these flags for go to use our custom sysroot instead of the system
+# one. Alternatively pkg-config supports setting a prefix, but that would require patching the source code.
+function setup_pkg_config() {
+    [[ $# -ne 2 ]] && { echo "Two arguments required. Got: $#"; exit 1; }
+    local -r cache="$1"
+    local -r URL="$2"
+    ln -s /bin/true /usr/bin/pkg-config || true
+    mkdir --parents ${cache}
+    curl -f "${URL}" -o ${cache}/Packages.gz
+    (cd ${cache} && gunzip Packages.gz )
+}
+
+function install_packages_to_toolchain_root() {
+    [[ $# -lt 3 ]] && { echo "Expected three arguments. Got $#"; exit 1; }
+    local -r toolchain_sysroot="$1"
+    local -r cache="$2"; shift 2
+    local -r required_packages_="$@"
+    for pkg in ${required_packages_} ; do
+        download_pkg ${cache} ${pkg}
+        echo "Extracting ${pkg} to an archive (tar.(xz|gz))...";
+        ar -x ${cache}/${pkg}_*_armhf.deb data.tar.xz;
+        tar --extract  --directory=${toolchain_sysroot} --file=data.tar.xz --transform='s,/arm-linux-gnueabihf,,'
+        echo "Finished ${pkg}"
+    done
+}
+
+function install_toolchain() {
+    [[ $# -ne 1 ]] && { echo "One argument only required. Got $#"; exit 1; }
+
+    local -r toolchain="$1"
+
+    eval install_cross_compiler_toolchain  \${${toolchain}[prefix]}  \${${toolchain}[url]}
+
+    req_pkgs=$(eval echo \${${toolchain}[requiredpkgs]})
+
+    eval setup_pkg_config \${${toolchain}[packagecache]} \${${toolchain}[packageurl]}
+
+    eval install_packages_to_toolchain_root \${${toolchain}[sysroot]} \${${toolchain}[packagecache]} \${${req_pkgs}[@]}
+}
+
+#
+# main
+#
+
+install_toolchain cross_pi_toolchain_${RASPBIAN_VERSION}
+
+
+
+
