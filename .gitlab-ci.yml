@@ -61,7 +61,7 @@ build:raspbian_latest:
     - echo "INFO - Building and Pushing ${CONTAINER_TAG}-${CI_PIPELINE_ID} to the registry ${CI_REGISTRY_IMAGE}"
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
     - tar -xvf docker-files-raspbian.tar
-    - docker build 
+    - docker build
         --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
         -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
         --build-arg raspbian_version=${RASPBIAN_VERSION}
@@ -84,9 +84,9 @@ build:acceptance-testing:
   script:
     - echo "INFO - Building and Pushing ${CONTAINER_TAG}-${CI_PIPELINE_ID} to the registry ${CI_REGISTRY_IMAGE}"
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build 
+    - docker build
         --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
-        -f backend-acceptance-testing/Dockerfile.backend-tests 
+        -f backend-acceptance-testing/Dockerfile.backend-tests
         -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
         --build-arg raspbian_version=${RASPBIAN_VERSION}
         --push
@@ -111,7 +111,7 @@ build:gui-e2e-testing:
   script:
     - echo "INFO - Building and Pushing ${CONTAINER_TAG} to the registry ${CI_REGISTRY_IMAGE}"
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build 
+    - docker build
         --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
         -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
         -f gui-e2e-testing/Dockerfile
@@ -134,10 +134,10 @@ build:backend-integration-testing:
   script:
     - echo "INFO - Building and Pushing ${CONTAINER_TAG} to the registry ${CI_REGISTRY_IMAGE}"
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build 
+    - docker build
         --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
         -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
-        -f backend-integration-testing/Dockerfile 
+        -f backend-integration-testing/Dockerfile
         --push
         backend-integration-testing
     # Upload to artifact storage left for backwards compatiblity
@@ -163,7 +163,7 @@ build:mender-client-acceptance-testing:
   script:
     - echo "INFO - Building and Pushing ${CONTAINER_TAG} to the registry ${CI_REGISTRY_IMAGE}"
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build 
+    - docker build
         --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
         -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
         -f mender-client-acceptance-testing/Dockerfile
@@ -192,7 +192,7 @@ build:aws-k8s-pipeline-toolbox:
   script:
     - echo "INFO - Building and Pushing ${CONTAINER_TAG}-${CI_PIPELINE_ID} to the registry ${CI_REGISTRY_IMAGE}"
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build 
+    - docker build
         --cache-from ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-master
         -t ${CI_REGISTRY_IMAGE}:${CONTAINER_TAG}-${CI_PIPELINE_ID}
         --build-arg KUBECTL_VERSION=${CI_KUBECTL_VERSION}
