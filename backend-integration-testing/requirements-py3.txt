@@ -1,6 +1,6 @@
 attrs==22.1.0
 azure-iot-hub==2.6.0
-boto3==1.24.66
+boto3==1.26.153
 certifi==2022.12.7
 cffi==1.15.1
 chardet==5.0.0
